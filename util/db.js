@@ -2,16 +2,24 @@ import mongodb from 'mongodb';
 import config from 'config/config';
 
 const { MongoClient } = mongodb;
+let db;
 
 const mongoConnect = cb => {
-  const client = new MongoClient(config.dbURL);
-  MongoClient.connect(err => {
-    if (err !== null) { throw Error('error connecting to database'); }
+  const client = new MongoClient(config.dbURL, { useNewUrlParser: true });
+  client.connect(err => {
+    if (err !== null) { throw Error(`error connecting to database ${err}`); }
     console.log('Connected!');
-    const db = client.db(config.dbName);
+    db = client.db(config.dbName);
     client.close();
-    cb(db);
+    cb();
   });
 };
 
-export default mongoConnect;
+const getDb = () => {
+  if (db) {
+    return db;
+  }
+  return new Error('No database');
+};
+
+export { mongoConnect, getDb };
